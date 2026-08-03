@@ -22,4 +22,4 @@ $env:TENCENT_SECRET_KEY="<腾讯云 SecretKey>"
 
 ## 检索评测
 
-完成全量向量重建后，可复制 `evaluation/rag-recall-baseline.example.json` 建立业务评测集，并通过 `scripts/evaluate-retrieval.ps1` 计算 Recall@K。评测用短期 Service JWT 只允许通过 `AI_EVAL_SERVICE_TOKEN` 环境变量传入。
+完成全量向量重建后，可复制 `evaluation/rag-recall-baseline.example.json` 建立业务评测集，并通过 `scripts/evaluate-retrieval.ps1` 计算 Recall@K。评测用短期 Service JWT 只允许通过 `AI_EVAL_SERVICE_TOKEN` 环境变量传入。当前仓库提供 12 篇专用文章和 36 条问题的合成基线，Recall@5 实测为 100%（36/36）；该结果只验证检索链路，不能替代真实业务样本。

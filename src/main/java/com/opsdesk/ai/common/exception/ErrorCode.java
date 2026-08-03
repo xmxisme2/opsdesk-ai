@@ -13,6 +13,8 @@ public enum ErrorCode {
     FORBIDDEN(403001, "无权限"),
     /** 系统异常：未预期异常或基础设施故障时使用。 */
     SYSTEM_ERROR(500001, "系统异常"),
+    /** AI 模型调用失败：外部 Chat 服务超时、拒绝或响应不完整时使用。 */
+    AI_SERVICE_FAILED(500201, "AI 服务调用失败"),
     /** AI 服务不可用：关键凭据或依赖未准备完成时使用。 */
     AI_SERVICE_UNAVAILABLE(500202, "AI 服务不可用"),
     /** 知识检索失败：OpenSearch 查询或结果融合失败时使用。 */
@@ -20,7 +22,9 @@ public enum ErrorCode {
     /** 向量生成失败：Embedding 提供方调用失败时使用。 */
     EMBEDDING_FAILED(500204, "向量生成失败"),
     /** 索引任务冲突：已有全量任务处于待执行或执行中。 */
-    INDEX_TASK_CONFLICT(409201, "索引任务已在执行");
+    INDEX_TASK_CONFLICT(409201, "索引任务已在执行"),
+    /** AI 请求参数错误：问题为空、过长或格式不符合问答约束时使用。 */
+    AI_REQUEST_INVALID(400201, "AI 问题为空、过长或包含不允许内容");
 
     private final int code;
     private final String message;

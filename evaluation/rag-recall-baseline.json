@@ -1,0 +1,49 @@
+[
+  {"caseId":"vpn-691-code","question":"VPN 提示错误 691 应该怎么处理？","expectedArticleIds":["880030030000000001"]},
+  {"caseId":"vpn-691-natural","question":"远程接入时用户名密码被拒绝，账号可能锁了，怎么排查？","expectedArticleIds":["880030030000000001"]},
+  {"caseId":"vpn-691-contrast","question":"VPN 网络能到网关，但认证阶段说凭据无效，不是 809 超时。","expectedArticleIds":["880030030000000001"]},
+
+  {"caseId":"vpn-809-code","question":"Windows VPN 错误 809 如何解决？","expectedArticleIds":["880030030000000002"]},
+  {"caseId":"vpn-809-natural","question":"VPN 一直正在连接最后超时，家庭路由器后面需要查哪些端口？","expectedArticleIds":["880030030000000002"]},
+  {"caseId":"vpn-809-ports","question":"远程接入要检查 UDP 500、4500 和 NAT-T 的哪篇文档？","expectedArticleIds":["880030030000000002"]},
+
+  {"caseId":"wifi-dns-code","question":"Wi-Fi 已连接但网页报 DNS_PROBE_FINISHED_NXDOMAIN。","expectedArticleIds":["880030030000000003"]},
+  {"caseId":"wifi-dns-natural","question":"电脑无线有信号，能 ping 公网 IP 但域名打不开怎么办？","expectedArticleIds":["880030030000000003"]},
+  {"caseId":"wifi-dns-command","question":"什么时候需要执行 ipconfig flushdns，并检查默认网关？","expectedArticleIds":["880030030000000003"]},
+
+  {"caseId":"ad-lock-direct","question":"企业 AD 账号锁定后如何解锁？","expectedArticleIds":["880030030000000004"]},
+  {"caseId":"ad-lock-repeat","question":"密码刚重置账号又被锁，可能是手机邮箱或计划任务还在用旧密码吗？","expectedArticleIds":["880030030000000004"]},
+  {"caseId":"ad-lock-natural","question":"域账号连续输错后不能登录，需要清理哪些保存的凭据？","expectedArticleIds":["880030030000000004"]},
+
+  {"caseId":"sso-50011-code","question":"SSO 登录报 AADSTS50011 是什么问题？","expectedArticleIds":["880030030000000005"]},
+  {"caseId":"sso-50011-natural","question":"Entra ID 提示 reply URL 和应用注册不一致，如何修复？","expectedArticleIds":["880030030000000005"]},
+  {"caseId":"sso-redirect-uri","question":"单点登录的 redirect URI 协议、端口和路径必须完全一致吗？","expectedArticleIds":["880030030000000005"]},
+
+  {"caseId":"erp-number","question":"ERP-AP-2026-0042 审批单没有流转。","expectedArticleIds":["880030030000000006"]},
+  {"caseId":"erp-workflow-natural","question":"ERP 已提交但下一审批人收不到待办，应该查工作流实例还是直接改状态？","expectedArticleIds":["880030030000000006"]},
+  {"caseId":"erp-queue","question":"审批流程异步任务处于 RETRY 或 FAILED 怎么处理？","expectedArticleIds":["880030030000000006"]},
+
+  {"caseId":"printer-code","question":"共享打印机连接失败，错误 0x0000011b。","expectedArticleIds":["880030030000000007"]},
+  {"caseId":"printer-natural","question":"Windows 更新后无法添加办公室共享打印机，怎样检查 RPC 和驱动？","expectedArticleIds":["880030030000000007"]},
+  {"caseId":"printer-security","question":"打印机 11b 问题能否靠长期关闭 RPC 身份验证解决？","expectedArticleIds":["880030030000000007"]},
+
+  {"caseId":"outlook-code","question":"Outlook 发送接收错误 0x8004010F。","expectedArticleIds":["880030030000000008"]},
+  {"caseId":"outlook-natural","question":"邮件客户端无法访问数据文件，需要新建配置文件还是删除 PST？","expectedArticleIds":["880030030000000008"]},
+  {"caseId":"outlook-ost","question":"企业邮箱 OST 损坏后如何让 Outlook 重新同步？","expectedArticleIds":["880030030000000008"]},
+
+  {"caseId":"mysql-1040-code","question":"MySQL 报 1040 Too many connections 怎么办？","expectedArticleIds":["880030030000000009"]},
+  {"caseId":"mysql-pool-natural","question":"数据库连接数打满，怎样判断是 HikariCP 配太大还是连接泄漏？","expectedArticleIds":["880030030000000009"]},
+  {"caseId":"mysql-capacity","question":"Threads_connected 很高时可以直接增加 max_connections 吗？","expectedArticleIds":["880030030000000009"]},
+
+  {"caseId":"linux-nospace-code","question":"Linux 报 No space left on device，但 df -h 还有空间。","expectedArticleIds":["880030030000000010"]},
+  {"caseId":"linux-inode","question":"大量小文件把 inode 用光了应该用什么命令检查？","expectedArticleIds":["880030030000000010"]},
+  {"caseId":"linux-deleted-open","question":"已删除的大日志仍占磁盘，如何用 lsof 查找未释放文件？","expectedArticleIds":["880030030000000010"]},
+
+  {"caseId":"cert-date-code","question":"浏览器提示 NET::ERR_CERT_DATE_INVALID。","expectedArticleIds":["880030030000000011"]},
+  {"caseId":"cert-date-natural","question":"内部 HTTPS 证书显示尚未生效，先检查电脑时间还是域名解析？","expectedArticleIds":["880030030000000011"]},
+  {"caseId":"cert-date-contrast","question":"证书过期和 COMMON_NAME_INVALID 有什么区别？","expectedArticleIds":["880030030000000011"]},
+
+  {"caseId":"http-status-direct","question":"HTTP 401 和 403 有什么区别？","expectedArticleIds":["880030030000000012"]},
+  {"caseId":"http-403-number","question":"故障编号 API-SEC-403-17 应该排查角色还是刷新令牌？","expectedArticleIds":["880030030000000012"]},
+  {"caseId":"http-auth-natural","question":"用户已经登录但接口禁止访问，是认证失败还是资源权限不足？","expectedArticleIds":["880030030000000012"]}
+]

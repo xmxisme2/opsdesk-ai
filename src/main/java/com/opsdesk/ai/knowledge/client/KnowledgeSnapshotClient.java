@@ -97,6 +97,29 @@ public class KnowledgeSnapshotClient {
         }
     }
 
+    /** 在返回引用前向主应用复核文章仍为已发布且当前用户可访问。 */
+    public List<String> checkArticleAccess(String userId, List<String> articleIds, String traceId) {
+        try {
+            String body = objectMapper.writeValueAsString(Map.of(
+                    "userId", userId, "articleIds", articleIds, "requiredStatus", "PUBLISHED"));
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizeBaseUrl() + "/internal/knowledge/articles/access-check"))
+                    .timeout(Duration.ofSeconds(10))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenIssuer.issue())
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .POST(HttpRequest.BodyPublishers.ofString(body));
+            if (traceId != null && !traceId.isBlank()) builder.header("X-Trace-Id", traceId);
+            HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+            JsonNode envelope = objectMapper.readTree(response.body());
+            if (response.statusCode() / 100 != 2 || envelope.path("code").asInt() != 200) {
+                throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE, "引用权限复核失败");
+            }
+            return objectMapper.convertValue(envelope.path("data").path("accessibleArticleIds"),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+        } catch (BusinessException exception) { throw exception; }
+        catch (Exception exception) { throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE, "引用权限复核失败"); }
+    }
+
     /** 全量重建使用的游标快照页。 */
     public record SnapshotPage(List<KnowledgeSnapshot> items, String nextAfterId, boolean hasMore) {
     }
