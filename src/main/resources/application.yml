@@ -70,9 +70,9 @@ management:
 
 opsdesk:
   ai:
-    # 阶段 1 强制保持关闭；后续必须完成索引、安全和质量验收后才能开启。
-    enabled: false
-    rag-enabled: false
+    # 默认关闭；完成 SSE、调用审计和端到端验收后，仅通过受保护的本地配置或环境变量开启。
+    enabled: ${AI_ENABLED:false}
+    rag-enabled: ${AI_RAG_ENABLED:false}
     indexing-enabled: ${AI_INDEXING_ENABLED:false}
     opsdesk-base-url: ${OPSDESK_BASE_URL:http://127.0.0.1:8080}
     service-jwt:
@@ -102,7 +102,7 @@ opsdesk:
     chat:
       base-url: ${AI_CHAT_BASE_URL:https://api.deepseek.com}
       api-key: ${DEEPSEEK_API_KEY:}
-      model: ${AI_CHAT_MODEL:deepseek-chat}
+      model: ${AI_CHAT_MODEL:deepseek-v4-flash}
       temperature: 0.1
       max-tokens: 4096
       timeout-seconds: 120

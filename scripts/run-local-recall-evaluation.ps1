@@ -2,7 +2,8 @@
     [string]$WorkspaceRoot = "D:\OpsDesk",
     [string]$DatasetPath = "",
     [ValidateRange(1, 20)]
-    [int]$K = 5
+    [int]$K = 5,
+    [switch]$RagStreamSmoke
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +22,8 @@ $sharedSecret = [Convert]::ToBase64String($secretBytes)
 $env:AI_SERVICE_JWT_SECRET = $sharedSecret
 $env:AI_INDEXING_ENABLED = "false"
 $env:AI_EVENTS_ENABLED = "false"
+$env:AI_ENABLED = if ($RagStreamSmoke) { "true" } else { "false" }
+$env:AI_RAG_ENABLED = if ($RagStreamSmoke) { "true" } else { "false" }
 $env:AI_KEY_PROPERTIES_PATH = Join-Path $backendRoot "src\main\resources\key.properties"
 
 $localAiEnv = Join-Path $WorkspaceRoot "deploy\local-ai\.env.local"
@@ -191,6 +194,53 @@ try {
         value = $recall
         failedCases = $failed
     } | ConvertTo-Json -Depth 7
+
+    if ($RagStreamSmoke) {
+        $smokeRequestId = "rag-stream-smoke-" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+        $streamResponse = Invoke-WebRequest -Method Post `
+            -Uri "http://127.0.0.1:8081/internal/rag/knowledge/chat/stream" `
+            -Headers @{ Authorization = "Bearer $(New-ServiceToken)" } `
+            -ContentType "application/json; charset=utf-8" `
+            -Body (@{ question = "VPN 连接提示错误 691 应该如何处理？"; clientRequestId = $smokeRequestId } | ConvertTo-Json -Compress) `
+            -UseBasicParsing -TimeoutSec 120
+        $streamContent = [string]$streamResponse.Content
+        foreach ($eventName in @("metadata", "references", "token", "done")) {
+            if ($streamContent -notmatch "event:$eventName") {
+                throw "SSE 缺少 $eventName 事件"
+            }
+        }
+        $auditQuery = "USE opsdesk_ai; SELECT COUNT(*) FROM ai_call_log WHERE request_id='$smokeRequestId' AND success=1 AND deleted=0;"
+        $auditCount = & $mysql --default-character-set=utf8mb4 -h localhost -uroot -N -B -e $auditQuery
+        if ([int]$auditCount -ne 1) {
+            throw "SSE 调用审计未正确落库"
+        }
+        $captcha = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8080/api/auth/captcha" `
+            -ContentType "application/json; charset=utf-8" -Body '{"scene":"login","captchaType":"IMAGE"}' -TimeoutSec 10
+        $captchaCode = & redis-cli GET "captcha:$($captcha.data.captchaId)"
+        $login = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8080/api/auth/login" `
+            -ContentType "application/json; charset=utf-8" `
+            -Body (@{ phone = "13800000000"; password = "root123456"; captchaType = "IMAGE";
+                captchaId = $captcha.data.captchaId; captchaCode = $captchaCode; rememberMe = $false } | ConvertTo-Json -Compress) `
+            -TimeoutSec 15
+        $proxyRequestId = "rag-proxy-smoke-" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+        $proxyStream = Invoke-WebRequest -Method Post `
+            -Uri "http://127.0.0.1:8080/api/ai/knowledge/chat/stream" `
+            -Headers @{ Authorization = "Bearer $($login.data.accessToken)" } `
+            -ContentType "application/json; charset=utf-8" `
+            -Body (@{ question = "VPN 连接提示错误 691 应该如何处理？"; clientRequestId = $proxyRequestId } | ConvertTo-Json -Compress) `
+            -UseBasicParsing -TimeoutSec 120
+        $proxyContent = if ($proxyStream.Content -is [byte[]]) {
+            [Text.Encoding]::UTF8.GetString($proxyStream.Content)
+        } else {
+            [string]$proxyStream.Content
+        }
+        foreach ($eventName in @("metadata", "references", "token", "done")) {
+            if ($proxyContent -notmatch "event:$eventName") {
+                throw "主应用 SSE 代理缺少 $eventName 事件"
+            }
+        }
+        Write-Output "ragStream=SUCCESS,events=metadata|references|token|done,audit=SUCCESS,proxy=SUCCESS"
+    }
 } finally {
     # 仅停止本脚本启动的确切进程，不影响其他本地 Java 或 Maven 任务。
     if ($aiProcess -and -not $aiProcess.HasExited) {

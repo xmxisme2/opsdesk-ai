@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ChatProperties {
     private String baseUrl = "https://api.deepseek.com";
     private String apiKey = "";
-    private String model = "deepseek-chat";
+    private String model = "deepseek-v4-flash";
     private double temperature = 0.1D;
     private int maxTokens = 4096;
     private int timeoutSeconds = 120;
