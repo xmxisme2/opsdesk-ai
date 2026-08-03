@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opsdesk.ai.knowledge.mapper.KnowledgeIndexStateMapper">
+    <resultMap id="ResultMap" type="com.opsdesk.ai.knowledge.entity.KnowledgeIndexState">
+        <id property="id" column="id"/>
+        <result property="articleId" column="article_id"/>
+        <result property="articleVersion" column="article_version"/>
+        <result property="contentHash" column="content_hash"/>
+        <result property="articleStatus" column="article_status"/>
+        <result property="indexStatus" column="index_status"/>
+        <result property="indexName" column="index_name"/>
+        <result property="indexVersion" column="index_version"/>
+        <result property="chunkCount" column="chunk_count"/>
+        <result property="lastEventId" column="last_event_id"/>
+        <result property="indexedTime" column="indexed_time"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="lastError" column="last_error"/>
+    </resultMap>
+    <select id="findByArticleId" resultMap="ResultMap">
+        SELECT id,article_id,article_version,content_hash,article_status,index_status,index_name,index_version,
+        chunk_count,last_event_id,indexed_time,retry_count,last_error
+        FROM knowledge_index_state WHERE article_id=#{articleId} AND deleted=0 LIMIT 1
+    </select>
+    <select id="findAll" resultMap="ResultMap">
+        SELECT id,article_id,article_version,content_hash,article_status,index_status,index_name,index_version,
+        chunk_count,last_event_id,indexed_time,retry_count,last_error
+        FROM knowledge_index_state WHERE deleted=0 ORDER BY article_id ASC
+    </select>
+    <insert id="insert">
+        INSERT INTO knowledge_index_state
+        (id,article_id,article_version,content_hash,article_status,index_status,index_name,index_version,
+         chunk_count,last_event_id,indexed_time,retry_count,last_error,create_by,update_by,deleted)
+        VALUES
+        (#{id},#{articleId},#{articleVersion},#{contentHash},#{articleStatus},#{indexStatus},#{indexName},
+         #{indexVersion},#{chunkCount},#{lastEventId},#{indexedTime},0,NULL,NULL,NULL,0)
+    </insert>
+    <update id="update">
+        UPDATE knowledge_index_state SET article_version=#{articleVersion},content_hash=#{contentHash},
+        article_status=#{articleStatus},index_status=#{indexStatus},index_name=#{indexName},
+        index_version=#{indexVersion},chunk_count=#{chunkCount},last_event_id=#{lastEventId},
+        indexed_time=#{indexedTime},retry_count=0,last_error=NULL,update_time=CURRENT_TIMESTAMP
+        WHERE id=#{id} AND deleted=0
+    </update>
+</mapper>

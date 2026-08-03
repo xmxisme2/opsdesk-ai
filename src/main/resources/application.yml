@@ -1,0 +1,121 @@
+server:
+  port: ${AI_SERVER_PORT:8081}
+
+spring:
+  application:
+    name: opsdesk-ai-service
+  config:
+    # 本地开发复用主应用目录下的私密配置；部署环境通过环境变量指向挂载文件。
+    import: optional:file:${AI_KEY_PROPERTIES_PATH:../opsdesk-backend/src/main/resources/key.properties}
+  autoconfigure:
+    # 服务只接受自定义 Service JWT，不创建默认用户名密码登录能力。
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  datasource:
+    # AI 服务只连接独立数据库，禁止改为 opsdesk 业务库。
+    url: ${AI_DB_URL:jdbc:mysql://localhost:3306/opsdesk_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${AI_DB_USERNAME:root}
+    password: ${AI_DB_PASSWORD:root123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${AI_REDIS_HOST:127.0.0.1}
+      port: ${AI_REDIS_PORT:6379}
+      timeout: 3s
+  rabbitmq:
+    host: ${AI_RABBITMQ_HOST:127.0.0.1}
+    port: ${AI_RABBITMQ_PORT:5672}
+    virtual-host: ${AI_RABBITMQ_VHOST:/opsdesk}
+    username: ${AI_RABBITMQ_USERNAME:opsdesk_ai}
+    password: ${AI_RABBITMQ_PASSWORD:}
+    listener:
+      simple:
+        auto-startup: ${AI_INDEXING_ENABLED:false}
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1s
+          multiplier: 2
+          max-interval: 10s
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: false
+  support-methods-arguments: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+opsdesk:
+  ai:
+    # 阶段 1 强制保持关闭；后续必须完成索引、安全和质量验收后才能开启。
+    enabled: false
+    rag-enabled: false
+    indexing-enabled: ${AI_INDEXING_ENABLED:false}
+    opsdesk-base-url: ${OPSDESK_BASE_URL:http://127.0.0.1:8080}
+    service-jwt:
+      secret: ${AI_SERVICE_JWT_SECRET:}
+      issuer: opsdesk-backend
+      audience: opsdesk-ai-service
+      max-clock-skew-seconds: 30
+    rabbitmq:
+      host: ${AI_RABBITMQ_HOST:127.0.0.1}
+      port: ${AI_RABBITMQ_PORT:5672}
+      virtual-host: ${AI_RABBITMQ_VHOST:/opsdesk}
+      username: ${AI_RABBITMQ_USERNAME:opsdesk_ai}
+      password: ${AI_RABBITMQ_PASSWORD:}
+    opensearch:
+      url: ${AI_OPENSEARCH_URL:https://127.0.0.1:9200}
+      username: ${AI_OPENSEARCH_USERNAME:opsdesk_ai}
+      password: ${AI_OPENSEARCH_PASSWORD:}
+      trust-self-signed: ${AI_OPENSEARCH_TRUST_SELF_SIGNED:true}
+      index-name: ${AI_OPENSEARCH_INDEX_NAME:opsdesk_knowledge_v001}
+      read-alias: opsdesk_knowledge_read
+      write-alias: opsdesk_knowledge_write
+      hybrid-candidate-size: ${AI_HYBRID_CANDIDATE_SIZE:20}
+      max-chunks-per-article: ${AI_MAX_CHUNKS_PER_ARTICLE:2}
+      hybrid-min-score: ${AI_HYBRID_MIN_SCORE:0.35}
+      keyword-weight: ${AI_KEYWORD_WEIGHT:0.45}
+      vector-weight: ${AI_VECTOR_WEIGHT:0.55}
+    chat:
+      base-url: ${AI_CHAT_BASE_URL:https://api.deepseek.com}
+      api-key: ${DEEPSEEK_API_KEY:}
+      model: ${AI_CHAT_MODEL:deepseek-chat}
+      temperature: 0.1
+      max-tokens: 4096
+      timeout-seconds: 120
+    embedding:
+      provider: tencent-lkeap
+      endpoint: ${AI_EMBEDDING_ENDPOINT:https://lkeap.tencentcloudapi.com}
+      model: ${AI_EMBEDDING_MODEL:lke-text-embedding-v2}
+      region: ${TENCENT_REGION:ap-guangzhou}
+      secret-id: ${TENCENT_SECRET_ID:}
+      secret-key: ${TENCENT_SECRET_KEY:}
+      timeout-seconds: ${AI_EMBEDDING_TIMEOUT_SECONDS:30}
+      batch-size: ${AI_EMBEDDING_BATCH_SIZE:7}
+
+logging:
+  file:
+    name: logs/opsdesk-ai-service.log

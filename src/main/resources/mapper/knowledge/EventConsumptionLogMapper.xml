@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opsdesk.ai.knowledge.mapper.EventConsumptionLogMapper">
+    <resultMap id="ResultMap" type="com.opsdesk.ai.knowledge.entity.EventConsumptionLog">
+        <id property="id" column="id"/>
+        <result property="eventId" column="event_id"/>
+        <result property="eventType" column="event_type"/>
+        <result property="aggregateId" column="aggregate_id"/>
+        <result property="consumerName" column="consumer_name"/>
+        <result property="consumeStatus" column="consume_status"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="consumedTime" column="consumed_time"/>
+        <result property="lastError" column="last_error"/>
+    </resultMap>
+    <select id="findByEventId" resultMap="ResultMap">
+        SELECT id,event_id,event_type,aggregate_id,consumer_name,consume_status,retry_count,consumed_time,last_error
+        FROM event_consumption_log WHERE event_id=#{eventId} AND deleted=0 LIMIT 1
+    </select>
+    <insert id="insert">
+        INSERT INTO event_consumption_log
+        (id,event_id,event_type,aggregate_id,consumer_name,consume_status,retry_count,create_by,update_by,deleted)
+        VALUES
+        (#{id},#{eventId},#{eventType},#{aggregateId},#{consumerName},#{consumeStatus},0,NULL,NULL,0)
+    </insert>
+    <update id="markProcessing">
+        UPDATE event_consumption_log SET consume_status='PROCESSING',retry_count=retry_count+1,
+        last_error=NULL,update_time=CURRENT_TIMESTAMP WHERE event_id=#{eventId} AND deleted=0
+    </update>
+    <update id="markSuccess">
+        UPDATE event_consumption_log SET consume_status='SUCCESS',consumed_time=CURRENT_TIMESTAMP,
+        last_error=NULL,update_time=CURRENT_TIMESTAMP WHERE event_id=#{eventId} AND deleted=0
+    </update>
+</mapper>

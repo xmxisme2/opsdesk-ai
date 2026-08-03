@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opsdesk.ai.config.mapper.AiRuntimeConfigMapper">
+
+    <resultMap id="AiRuntimeConfigResultMap" type="com.opsdesk.ai.config.entity.AiRuntimeConfig">
+        <id property="id" column="id"/>
+        <result property="configKey" column="config_key"/>
+        <result property="configValue" column="config_value"/>
+        <result property="valueType" column="value_type"/>
+        <result property="configGroup" column="config_group"/>
+        <result property="description" column="description"/>
+        <result property="editable" column="editable"/>
+        <result property="configVersion" column="config_version"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <select id="selectActiveByKey" resultMap="AiRuntimeConfigResultMap">
+        SELECT id,
+               config_key,
+               config_value,
+               value_type,
+               config_group,
+               description,
+               editable,
+               config_version,
+               create_time,
+               update_time,
+               create_by,
+               update_by,
+               deleted
+        FROM ai_runtime_config
+        WHERE config_key = #{configKey}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+</mapper>

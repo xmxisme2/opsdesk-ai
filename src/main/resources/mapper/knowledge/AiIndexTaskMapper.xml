@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opsdesk.ai.knowledge.mapper.AiIndexTaskMapper">
+    <resultMap id="ResultMap" type="com.opsdesk.ai.knowledge.entity.AiIndexTask">
+        <id property="id" column="id"/>
+        <result property="taskType" column="task_type"/>
+        <result property="articleId" column="article_id"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="requestId" column="request_id"/>
+        <result property="targetIndexName" column="target_index_name"/>
+        <result property="totalCount" column="total_count"/>
+        <result property="successCount" column="success_count"/>
+        <result property="failedCount" column="failed_count"/>
+        <result property="lastError" column="last_error"/>
+    </resultMap>
+    <select id="findByRequestId" resultMap="ResultMap">
+        SELECT id,task_type,article_id,task_status,request_id,target_index_name,total_count,
+        success_count,failed_count,last_error FROM ai_index_task
+        WHERE request_id=#{requestId} AND deleted=0 LIMIT 1
+    </select>
+    <select id="findRunning" resultMap="ResultMap">
+        SELECT id,task_type,article_id,task_status,request_id,target_index_name,total_count,
+        success_count,failed_count,last_error FROM ai_index_task
+        WHERE task_status IN ('PENDING','RUNNING') AND deleted=0 ORDER BY create_time ASC LIMIT 1
+    </select>
+    <insert id="insert">
+        INSERT INTO ai_index_task
+        (id,task_type,article_id,task_status,request_id,target_index_name,total_count,success_count,
+         failed_count,create_by,update_by,deleted)
+        VALUES
+        (#{id},#{taskType},#{articleId},#{taskStatus},#{requestId},#{targetIndexName},0,0,0,NULL,NULL,0)
+    </insert>
+    <update id="markRunning">
+        UPDATE ai_index_task SET task_status='RUNNING',target_index_name=#{targetIndexName},
+        started_time=CURRENT_TIMESTAMP,update_time=CURRENT_TIMESTAMP WHERE id=#{id} AND deleted=0
+    </update>
+    <update id="markSuccess">
+        UPDATE ai_index_task SET task_status='SUCCESS',total_count=#{totalCount},
+        success_count=#{successCount},failed_count=0,finished_time=CURRENT_TIMESTAMP,last_error=NULL,
+        update_time=CURRENT_TIMESTAMP WHERE id=#{id} AND deleted=0
+    </update>
+    <update id="markFailed">
+        UPDATE ai_index_task SET task_status='FAILED',total_count=#{totalCount},
+        success_count=#{successCount},failed_count=GREATEST(#{totalCount}-#{successCount},1),
+        finished_time=CURRENT_TIMESTAMP,last_error=#{lastError},update_time=CURRENT_TIMESTAMP
+        WHERE id=#{id} AND deleted=0
+    </update>
+</mapper>

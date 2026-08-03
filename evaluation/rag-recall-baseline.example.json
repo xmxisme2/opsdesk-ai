@@ -1,0 +1,12 @@
+[
+  {
+    "caseId": "vpn-natural-language-001",
+    "question": "公司 VPN 无法连接时应该怎么排查？",
+    "expectedArticleIds": ["替换为本地已发布文章ID"]
+  },
+  {
+    "caseId": "ticket-number-001",
+    "question": "替换为包含精确编号的检索问题",
+    "expectedArticleIds": ["替换为本地已发布文章ID"]
+  }
+]
