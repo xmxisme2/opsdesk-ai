@@ -23,6 +23,8 @@ public enum ErrorCode {
     EMBEDDING_FAILED(500204, "向量生成失败"),
     /** 索引任务冲突：已有全量任务处于待执行或执行中。 */
     INDEX_TASK_CONFLICT(409201, "索引任务已在执行"),
+    /** AI 资源越权：会话、消息或引用不属于当前用户。 */
+    AI_RESOURCE_FORBIDDEN(403201, "无权访问 AI 会话或引用"),
     /** AI 请求参数错误：问题为空、过长或格式不符合问答约束时使用。 */
     AI_REQUEST_INVALID(400201, "AI 问题为空、过长或包含不允许内容");
 

@@ -9,10 +9,11 @@ cd D:\OpsDesk\opsdesk-ai-service
 .\sql\init-local-db.ps1
 ```
 
-启动前为主应用和 AI 应用设置同一个 `AI_SERVICE_JWT_SECRET`，长度至少 32 个字符。Embedding 使用腾讯云 `lke-text-embedding-v2`；密钥通过环境变量或外部私密属性文件提供，不得提交到仓库。
+本地开发默认从 `src/main/resources/key.properties` 读取固定的 `AI_SERVICE_JWT_SECRET`，主应用通过相对路径读取同一文件。该文件已被 Git 忽略并从 Maven 资源中排除，不会进入仓库或 JAR；如需迁移位置，可让两个服务同时设置 `AI_SERVICE_KEY_PROPERTIES_PATH`。生产环境必须使用环境变量、挂载密钥文件或密钥管理系统。
+
+Embedding 使用腾讯云 `lke-text-embedding-v2`；模型密钥继续通过环境变量或主应用目录下已忽略的外部私密属性文件提供，不得提交到仓库。
 
 ```powershell
-$env:AI_SERVICE_JWT_SECRET="<本地共享密钥>"
 $env:TENCENT_SECRET_ID="<腾讯云 SecretId>"
 $env:TENCENT_SECRET_KEY="<腾讯云 SecretKey>"
 .\mvnw.cmd spring-boot:run

@@ -2,7 +2,7 @@ package com.opsdesk.ai.rag.entity;
 
 import lombok.Data;
 
-/** 单轮 RAG 调用审计实体，不保存原始问题、知识片段或模型密钥。 */
+/** RAG 调用审计实体，不保存原始问题、知识片段或模型密钥。 */
 @Data
 public class AiCallLog {
     private Long id;
@@ -10,6 +10,7 @@ public class AiCallLog {
     private String traceId;
     private String scene;
     private Long operatorId;
+    private Long conversationId;
     private String provider;
     private String model;
     private Long retrievalDurationMs;

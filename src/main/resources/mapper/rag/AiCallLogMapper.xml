@@ -3,11 +3,11 @@
 <mapper namespace="com.opsdesk.ai.rag.mapper.AiCallLogMapper">
     <insert id="insert">
         INSERT INTO ai_call_log
-        (id,request_id,trace_id,scene,operator_id,provider,model,retrieval_duration_ms,generation_duration_ms,
+        (id,request_id,trace_id,scene,operator_id,conversation_id,provider,model,retrieval_duration_ms,generation_duration_ms,
          duration_ms,candidate_count,selected_chunk_count,reference_count,desensitized,insufficient_evidence,
          success,error_code,fallback_reason,create_by,update_by,deleted)
         VALUES
-        (#{id},#{requestId},#{traceId},#{scene},#{operatorId},#{provider},#{model},#{retrievalDurationMs},#{generationDurationMs},
+        (#{id},#{requestId},#{traceId},#{scene},#{operatorId},#{conversationId},#{provider},#{model},#{retrievalDurationMs},#{generationDurationMs},
          #{durationMs},#{candidateCount},#{selectedChunkCount},#{referenceCount},#{desensitized},#{insufficientEvidence},
          #{success},#{errorCode},#{fallbackReason},#{operatorId},#{operatorId},0)
     </insert>

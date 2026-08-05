@@ -5,8 +5,10 @@ spring:
   application:
     name: opsdesk-ai-service
   config:
-    # 本地开发复用主应用目录下的私密配置；部署环境通过环境变量指向挂载文件。
-    import: optional:file:${AI_KEY_PROPERTIES_PATH:../opsdesk-backend/src/main/resources/key.properties}
+    # 模型密钥继续复用主应用私密配置，Service JWT 使用 AI 服务自己的本地忽略文件。
+    import:
+      - optional:file:${AI_KEY_PROPERTIES_PATH:../opsdesk-backend/src/main/resources/key.properties}
+      - optional:file:${AI_SERVICE_KEY_PROPERTIES_PATH:./src/main/resources/key.properties}
   autoconfigure:
     # 服务只接受自定义 Service JWT，不创建默认用户名密码登录能力。
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration

@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.http.MediaType;
 import jakarta.servlet.http.HttpServletRequest;
 
-/** 仅供主应用代理调用的单轮 RAG JSON 接口。 */
+/** 仅供主应用代理调用的持久化多轮 RAG 接口。 */
 @RestController
 @RequestMapping("/internal/rag/knowledge")
 public class InternalKnowledgeRagController {
@@ -27,12 +27,13 @@ public class InternalKnowledgeRagController {
     }
     @PostMapping("/chat")
     public ApiResponse<RagChatResponse> chat(@AuthenticationPrincipal ServicePrincipal principal, @Valid @RequestBody RagChatRequest request) {
-        return ApiResponse.success(service.chat(principal, request.question()));
+        return ApiResponse.success(service.chat(principal, request.question(), request.conversationId(), request.clientRequestId()));
     }
 
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@AuthenticationPrincipal ServicePrincipal principal,
                              @Valid @RequestBody RagChatRequest request, HttpServletRequest servletRequest) {
-        return streamService.stream(principal, request.question(), request.clientRequestId(), servletRequest.getHeader("X-Trace-Id"));
+        return streamService.stream(principal, request.question(), request.conversationId(), request.clientRequestId(),
+                servletRequest.getHeader("X-Trace-Id"));
     }
 }

@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS ai_conversation (
   deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0 正常，1 删除',
   KEY idx_ai_conversation_owner (owner_id, status, last_message_time),
   KEY idx_ai_conversation_expire (expire_time, deleted)
-) COMMENT='AI 会话，阶段 6 启用';
+) COMMENT='AI 用户会话';
 
 CREATE TABLE IF NOT EXISTS ai_message (
   id BIGINT NOT NULL PRIMARY KEY COMMENT '主键',

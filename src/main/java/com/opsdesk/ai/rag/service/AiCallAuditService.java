@@ -18,16 +18,20 @@ public class AiCallAuditService {
     public AiCallAuditService(LocalSnowflakeIdGenerator idGenerator, AiCallLogMapper mapper, ChatProperties properties) {
         this.idGenerator = idGenerator; this.mapper = mapper; this.properties = properties;
     }
-    public void record(String requestId, String traceId, String userId, long retrievalMs, long generationMs,
-                       int candidates, int selected, boolean insufficient, boolean success, String fallbackReason) {
+    public long record(String requestId, String traceId, String userId, long conversationId,
+                       long retrievalMs, long generationMs, int candidates, int selected,
+                       boolean insufficient, boolean success, String fallbackReason) {
+        long id = idGenerator.nextId();
         try {
             AiCallLog log = new AiCallLog();
-            log.setId(idGenerator.nextId()); log.setRequestId(requestId); log.setTraceId(traceId == null ? "" : traceId);
+            log.setId(id); log.setRequestId(requestId); log.setTraceId(traceId == null ? "" : traceId);
             log.setScene("KNOWLEDGE_RAG"); log.setOperatorId(Long.parseLong(userId)); log.setProvider("deepseek");
+            log.setConversationId(conversationId);
             log.setModel(properties.getModel()); log.setRetrievalDurationMs(retrievalMs); log.setGenerationDurationMs(generationMs);
             log.setDurationMs(retrievalMs + generationMs); log.setCandidateCount(candidates); log.setSelectedChunkCount(selected);
             log.setReferenceCount(selected); log.setDesensitized(true); log.setInsufficientEvidence(insufficient); log.setSuccess(success);
             log.setFallbackReason(fallbackReason); mapper.insert(log);
         } catch (Exception exception) { LOG.warn("AI 调用审计写入失败 requestId={}", requestId); }
+        return id;
     }
 }

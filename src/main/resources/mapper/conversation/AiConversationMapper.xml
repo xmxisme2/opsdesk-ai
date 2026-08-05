@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opsdesk.ai.conversation.mapper.AiConversationMapper">
+    <insert id="insertConversation">
+        INSERT INTO ai_conversation
+        (id,owner_id,title,scene,status,last_message_time,message_count,expire_time,create_by,update_by,deleted)
+        VALUES (#{id},#{ownerId},#{title},#{scene},#{status},#{lastMessageTime},#{messageCount},#{expireTime},#{ownerId},#{ownerId},0)
+    </insert>
+    <select id="selectOwnedConversation" resultType="com.opsdesk.ai.conversation.model.ConversationRow">
+        SELECT id,owner_id,title,scene,status,last_message_time,message_count,expire_time,create_time
+        FROM ai_conversation WHERE id=#{id} AND owner_id=#{ownerId} AND deleted=0
+    </select>
+    <select id="searchOwned" resultType="com.opsdesk.ai.conversation.model.ConversationRow">
+        SELECT id,owner_id,title,scene,status,last_message_time,message_count,expire_time,create_time
+        FROM ai_conversation
+        WHERE owner_id=#{ownerId} AND status=#{status} AND deleted=0
+        <if test="keyword != null and keyword != ''">AND title LIKE CONCAT('%',#{keyword},'%')</if>
+        ORDER BY last_message_time DESC,id DESC
+    </select>
+    <update id="updateConversationActivity">
+        UPDATE ai_conversation SET last_message_time=NOW(),message_count=#{messageCount},expire_time=DATE_ADD(NOW(),INTERVAL 30 DAY),
+        update_by=#{ownerId} WHERE id=#{id} AND owner_id=#{ownerId} AND deleted=0
+    </update>
+    <update id="updateConversationStatus">
+        UPDATE ai_conversation SET status=#{status},update_by=#{ownerId} WHERE id=#{id} AND owner_id=#{ownerId} AND deleted=0
+    </update>
+    <update id="logicalDeleteConversation">
+        UPDATE ai_conversation SET deleted=1,update_by=#{ownerId} WHERE id=#{id} AND owner_id=#{ownerId} AND deleted=0
+    </update>
+    <update id="logicalDeleteMessages">
+        UPDATE ai_message SET deleted=1,update_by=#{ownerId} WHERE conversation_id=#{conversationId} AND deleted=0
+    </update>
+    <insert id="insertMessage">
+        INSERT INTO ai_message
+        (id,conversation_id,role,content,content_hash,call_log_id,sequence_no,insufficient_evidence,status,create_by,update_by,deleted)
+        VALUES (#{id},#{conversationId},#{role},#{content},#{contentHash},#{callLogId},#{sequenceNo},#{insufficientEvidence},#{status},#{createBy},#{createBy},0)
+    </insert>
+    <select id="nextSequence" resultType="int">
+        SELECT COALESCE(MAX(sequence_no),0)+1 FROM ai_message WHERE conversation_id=#{conversationId} AND deleted=0
+    </select>
+    <select id="selectMessages" resultType="com.opsdesk.ai.conversation.model.MessageRow">
+        SELECT m.id,m.conversation_id,m.role,m.content,m.content_hash,m.call_log_id,m.sequence_no,
+               m.insufficient_evidence,m.status,m.create_time,f.rating AS feedback
+        FROM ai_message m
+        INNER JOIN ai_conversation c ON c.id=m.conversation_id AND c.owner_id=#{ownerId} AND c.deleted=0
+        LEFT JOIN rag_feedback f ON f.message_id=m.id AND f.operator_id=#{ownerId} AND f.deleted=0
+        WHERE m.conversation_id=#{conversationId} AND m.deleted=0 ORDER BY m.sequence_no ASC
+    </select>
+    <select id="selectRecentMessages" resultType="com.opsdesk.ai.conversation.model.MessageRow">
+        SELECT id,conversation_id,role,content,content_hash,call_log_id,sequence_no,insufficient_evidence,status,create_time
+        FROM (SELECT id,conversation_id,role,content,content_hash,call_log_id,sequence_no,insufficient_evidence,status,create_time
+              FROM ai_message WHERE conversation_id=#{conversationId} AND deleted=0 AND status='SUCCESS'
+              ORDER BY sequence_no DESC LIMIT #{limit}) recent ORDER BY sequence_no ASC
+    </select>
+    <update id="completeMessage">
+        UPDATE ai_message SET content=#{content},content_hash=#{contentHash},call_log_id=#{callLogId},
+        insufficient_evidence=#{insufficient},status='SUCCESS' WHERE id=#{id} AND deleted=0
+    </update>
+    <update id="failMessage">
+        UPDATE ai_message SET status=#{status} WHERE id=#{id} AND deleted=0
+    </update>
+    <select id="selectOwnedAssistantMessage" resultType="com.opsdesk.ai.conversation.model.MessageRow">
+        SELECT m.id,m.conversation_id,m.role,m.content,m.content_hash,m.call_log_id,m.sequence_no,
+               m.insufficient_evidence,m.status,m.create_time
+        FROM ai_message m INNER JOIN ai_conversation c ON c.id=m.conversation_id
+        WHERE m.id=#{id} AND m.role='ASSISTANT' AND m.deleted=0 AND c.owner_id=#{ownerId} AND c.deleted=0
+    </select>
+    <insert id="insertReference">
+        INSERT INTO ai_call_reference
+        (id,call_log_id,article_id,article_version,chunk_id,chunk_no,title,heading,snippet,keyword_score,vector_score,
+         final_score,rank_no,selected,cited,create_by,update_by,deleted)
+        VALUES (#{id},#{callLogId},#{articleId},#{articleVersion},#{chunkId},#{chunkNo},#{title},#{heading},#{snippet},
+                #{keywordScore},#{vectorScore},#{finalScore},#{rankNo},1,1,NULL,NULL,0)
+    </insert>
+    <select id="selectReferences" resultType="com.opsdesk.ai.conversation.model.ReferenceRow">
+        SELECT id,call_log_id,article_id,article_version,chunk_id,chunk_no,title,heading,snippet,
+               keyword_score,vector_score,final_score,rank_no
+        FROM ai_call_reference WHERE call_log_id=#{callLogId} AND deleted=0 AND cited=1 ORDER BY rank_no ASC
+    </select>
+    <insert id="upsertFeedback">
+        INSERT INTO rag_feedback
+        (id,message_id,call_log_id,operator_id,rating,reason_code,comment,create_by,update_by,deleted)
+        VALUES (#{id},#{messageId},#{callLogId},#{operatorId},#{rating},#{reasonCode},#{comment},#{operatorId},#{operatorId},0)
+        ON DUPLICATE KEY UPDATE rating=VALUES(rating),reason_code=VALUES(reason_code),comment=VALUES(comment),
+                                update_by=VALUES(update_by),update_time=NOW()
+    </insert>
+</mapper>

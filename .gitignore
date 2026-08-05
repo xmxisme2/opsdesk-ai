@@ -1,5 +1,6 @@
 /target/
 /logs/
 /.env.local
+/src/main/resources/key.properties
 /.idea/
 *.iml
